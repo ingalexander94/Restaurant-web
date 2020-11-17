@@ -10,7 +10,7 @@ const PublicRouter = ({ isAuthenticated, component: Component, ...res }) => {
         !isAuthenticated ? (
           <Component {...props} />
         ) : (
-          <Redirect to="/cocinero/ordenes" />
+          <Redirect to="/usuario/cocinero/ordenes" />
         )
       }
     />

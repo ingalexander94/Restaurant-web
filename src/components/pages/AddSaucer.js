@@ -1,15 +1,24 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useHistory } from "react-router-dom";
 import FileUploader from "react-firebase-file-uploader";
+import AuthContext from "../auth/authContext";
 import FirebaseContext from "../../firebase/context";
 import { showToast } from "../../alerts";
 
 export const AddSaucer = () => {
   // Hooks
-  const { firebase } = useContext(FirebaseContext);
   const history = useHistory();
+  const ChefAuth = useContext(AuthContext);
+
+  useEffect(() => {
+    if (ChefAuth.role !== "administrador") {
+      history.push("/usuario/cocinero/ordenes");
+    }
+  }, [ChefAuth.role, history]);
+
+  const { firebase } = useContext(FirebaseContext);
 
   const [progress, setProgress] = useState(1);
   const [upload, setUpload] = useState(false);
@@ -36,7 +45,7 @@ export const AddSaucer = () => {
       category: Yup.string().required("El campo categoría es obligatorio"),
       description: Yup.string()
         .min(10, "Debe tener al menos 10 caracteres")
-        .max(100, "Debe tener máximo 100 caracteres")
+        .max(200, "Debe tener máximo 200 caracteres")
         .required("El campo descripción es obligatorio"),
     }),
     onSubmit: async (saucer) => {
@@ -53,7 +62,7 @@ export const AddSaucer = () => {
         formik.handleReset();
         setLoading(false);
         showToast("success", "Se creo un nuevo producto");
-        history.push("/cocinero/menu");
+        history.push("/usuario/cocinero/menu");
       } catch (error) {
         setLoading(false);
         showToast("error", "Ocurrio un error al crear el proyecto");
@@ -88,138 +97,159 @@ export const AddSaucer = () => {
 
   return (
     <>
-      <h1 className="text-center">Crear Platillo</h1>
-      <hr className="bg-white" />
-      <div className="col-lg-6 col-md-8 mx-auto">
-        <form onSubmit={formik.handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">
-              <strong>Nombre</strong>
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="name"
-              placeholder="Nombre"
-              value={formik.values.name}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              autoComplete="off"
-            />
-            {formik.touched.name && formik.errors.name && (
-              <p className="text-danger">
-                <strong>{formik.errors.name}</strong>
-              </p>
-            )}
-          </div>
-          <div className="form-group">
-            <label htmlFor="price">
-              <strong>Precio</strong>
-            </label>
-            <input
-              type="number"
-              className="form-control"
-              id="price"
-              placeholder="$100"
-              value={formik.values.price}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              autoComplete="off"
-            />
-            {formik.touched.price && formik.errors.price && (
-              <p className="text-danger">
-                <strong>{formik.errors.price}</strong>
-              </p>
-            )}
-          </div>
-          <div className="form-group">
-            <label htmlFor="category">
-              <strong>Categoría</strong>
-            </label>
-            <select
-              className="custom-select mr-sm-2"
-              id="category"
-              value={formik.values.category}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            >
-              <option value="">Seleccione...</option>
-              <option value="comida">Comida</option>
-              <option value="desayuno">Desayuno</option>
-              <option value="cena">Cena</option>
-              <option value="bebida">Bebida</option>
-              <option value="postre">Postre</option>
-              <option value="ensalada">Ensalada</option>
-            </select>
-            {formik.touched.category && formik.errors.category && (
-              <p className="text-danger">
-                <strong>{formik.errors.category}</strong>
-              </p>
-            )}
-          </div>
-          <div className="form-group">
-            <label htmlFor="image">
-              <strong>Imagen</strong>
-            </label>
-
-            <FileUploader
-              accept="image/*"
-              className="form-control-file"
-              name="image"
-              id="image"
-              randomizeFilename
-              storageRef={firebase.storage.ref("products")}
-              onUploadStart={handleUploadStart}
-              onUploadError={handleUploadError}
-              onUploadSuccess={handleUploadSuccess}
-              onProgress={handleProgress}
+      <div
+        className="card mb-3 border-0"
+        style={{ backgroundColor: "#FAFAFA" }}
+      >
+        <div className="row g-0">
+          <div className="col-md-6">
+            <img
+              src="https://cdn.dribbble.com/users/1355613/screenshots/5972919/attachments/1284399/cook.jpg"
+              alt="Cargando..."
+              className="img-fluid img-container animate__animated animate__fadeIn"
             />
           </div>
-
-          {upload && (
-            <div className="progress">
-              <div
-                className="progress-bar progress-bar-striped"
-                role="progressbar"
-                style={{ width: `${progress}%` }}
-                aria-valuenow={progress}
-                aria-valuemin="0"
-                aria-valuemax="100"
-              >
-                {`${progress}%`}
+          <div className="col-md-6 p-4">
+            <form onSubmit={formik.handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="name">
+                  <strong>Nombre</strong>
+                </label>
+                <input
+                  type="text"
+                  className="form-control bg-input"
+                  id="name"
+                  placeholder="Nombre"
+                  value={formik.values.name}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  autoComplete="off"
+                />
+                {formik.touched.name && formik.errors.name && (
+                  <p className="text-error">
+                    <strong>{formik.errors.name}</strong>
+                  </p>
+                )}
               </div>
-            </div>
-          )}
+              <div className="form-group">
+                <label htmlFor="price">
+                  <strong>Precio</strong>
+                </label>
+                <input
+                  type="number"
+                  className="form-control bg-input"
+                  id="price"
+                  placeholder="$100"
+                  value={formik.values.price}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  autoComplete="off"
+                />
+                {formik.touched.price && formik.errors.price && (
+                  <p className="text-error">
+                    <strong>{formik.errors.price}</strong>
+                  </p>
+                )}
+              </div>
+              <div className="form-group">
+                <label htmlFor="category">
+                  <strong>Categoría</strong>
+                </label>
+                <select
+                  className="custom-select mr-sm-2 bg-input"
+                  id="category"
+                  value={formik.values.category}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                >
+                  <option value="">Seleccione...</option>
+                  <option value="almuerzos">Almuerzos</option>
+                  <option value="bebidas">Bebidas</option>
+                  <option value="cena">Cena</option>
+                  <option value="cervezas">Cervezas</option>
+                  <option value="comida rapida">Comida rápida</option>
+                  <option value="cócteles">Cócteles</option>
+                  <option value="desayuno">Desayuno</option>
+                </select>
+                {formik.touched.category && formik.errors.category && (
+                  <p className="text-error">
+                    <strong>{formik.errors.category}</strong>
+                  </p>
+                )}
+              </div>
+              <div className="form-group">
+                <label htmlFor="image">
+                  <strong>Imagen</strong>
+                </label>
 
-          <div className="form-group">
-            <label htmlFor="description">
-              <strong>Descripción</strong>
-            </label>
-            <textarea
-              className="form-control"
-              id="description"
-              rows="2"
-              style={{ resize: "none" }}
-              value={formik.values.description}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              autoComplete="off"
-            ></textarea>
-            {formik.touched.description && formik.errors.description && (
-              <p className="text-danger">
-                <strong>{formik.errors.description}</strong>
-              </p>
-            )}
+                <div className="custom-file bg-input">
+                  <FileUploader
+                    accept="image/*"
+                    className="custom-file-input bg-input"
+                    id="customFileLang"
+                    name="image"
+                    randomizeFilename
+                    storageRef={firebase.storage.ref("products")}
+                    onUploadStart={handleUploadStart}
+                    onUploadError={handleUploadError}
+                    onUploadSuccess={handleUploadSuccess}
+                    onProgress={handleProgress}
+                  />
+                  <label
+                    className="custom-file-label bg-input"
+                    htmlFor="customFileLang"
+                  >
+                    Seleccionar Archivo
+                  </label>
+                </div>
+              </div>
+
+              {upload && (
+                <div className="progress">
+                  <div
+                    className="progress-bar progress-bar-striped bg-warning"
+                    role="progressbar"
+                    style={{ width: `${progress}%` }}
+                    aria-valuenow={progress}
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  >
+                    {`${progress}%`}
+                  </div>
+                </div>
+              )}
+
+              <div className="form-group">
+                <label htmlFor="description">
+                  <strong>Descripción</strong>
+                </label>
+                <textarea
+                  className="form-control bg-input"
+                  id="description"
+                  rows="2"
+                  style={{ resize: "none" }}
+                  value={formik.values.description}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  autoComplete="off"
+                ></textarea>
+                {formik.touched.description && formik.errors.description && (
+                  <p className="text-error">
+                    <strong>{formik.errors.description}</strong>
+                  </p>
+                )}
+              </div>
+              <button
+                className="btn btn-warning btn-block"
+                type="submit"
+                disabled={loading || !formik.isValid}
+              >
+                Crear platillo
+                {loading && <i className="ml-2 fas fa-spinner fa-pulse"></i>}
+              </button>
+            </form>
           </div>
-          <button
-            className="btn btn-info btn-block"
-            type="submit"
-            disabled={loading || !formik.isValid}
-          >
-            Crear platillo
-            {loading && <i className="ml-2 fas fa-spinner fa-pulse"></i>}
-          </button>
-        </form>
+        </div>
       </div>
     </>
   );

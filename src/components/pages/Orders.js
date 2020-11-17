@@ -32,8 +32,6 @@ export const Orders = () => {
 
   return (
     <>
-      <h1 className="text-center">Ordenes</h1>
-      <hr className="bg-white" />
       {orders.length > 0 ? (
         <div className="card-columns">
           {orders.map((order) => (
@@ -41,7 +39,7 @@ export const Orders = () => {
           ))}
         </div>
       ) : (
-        <p>No ha recibido pedidos hasta el momento.</p>
+        <p>No se han recibido pedidos hasta el momento.</p>
       )}
     </>
   );

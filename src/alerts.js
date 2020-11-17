@@ -25,9 +25,22 @@ const showQuestion = (title, text, icon, confirmButtonText) => {
     text,
     icon,
     showCancelButton: false,
-    confirmButtonColor: "#3085d6",
+    confirmButtonColor: "#FDD24B",
     confirmButtonText,
   });
 };
 
-export { showToast, showQuestion };
+const showAlertInput = (title, text) => {
+  return Swal.mixin({
+    input: "number",
+    confirmButtonText: "Aceptar",
+    progressSteps: ["1"],
+  }).queue([
+    {
+      title,
+      text,
+    },
+  ]);
+};
+
+export { showToast, showQuestion, showAlertInput };

@@ -8,26 +8,39 @@ import FirebaseContext from "../../firebase/context";
 const CardOrder = ({ order: request }) => {
   const { firebase } = useContext(FirebaseContext);
   const [timer, setTimer] = useState(1);
+  const [updateTimer, setupdateTimer] = useState(false);
 
   const startTimer = async () => {
     try {
       await firebase.db.doc(`orders/${request.id}`).update({
+        create: Date.now(),
         timer,
       });
+      setupdateTimer(false);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const showCounter = ({ minutes, seconds }) => (
-    <strong>{`${minutes}:${seconds}`}</strong>
-  );
+  const showCounter = ({ hours, minutes, seconds }) => {
+    return (
+      <h4
+        className={`text-${
+          minutes <= 5 ? "danger" : "white"
+        } c-pointer no-seleccionable`}
+        title="Doble click para actualizar"
+        onDoubleClick={() => setupdateTimer(true)}
+      >
+        {`${hours}:${minutes}:${seconds}`} <i className="far fa-clock"></i>
+      </h4>
+    );
+  };
 
   const finishOrder = async () => {
     const { isConfirmed } = await showQuestion(
       "¿ El pedido esta listo para entregar ?",
       "Se informará al cliente que pase por el pedido",
-      "info",
+      "warning",
       "Informar al cliente"
     );
     if (isConfirmed) {
@@ -62,7 +75,7 @@ const CardOrder = ({ order: request }) => {
                 ({product.quantity}) {product.name}
               </span>
               {product.notes !== "" && (
-                <div className="alert alert-primary m-0 p-0" role="alert">
+                <div className="alert alert-warning m-0 p-0" role="alert">
                   <strong>{product.notes}</strong>
                 </div>
               )}
@@ -70,39 +83,41 @@ const CardOrder = ({ order: request }) => {
           ))}
         </ul>
 
-        {request.timer === 0 && (
+        {(request.timer === 0 || updateTimer) && (
           <div className="input-group mt-2 pl-4 pr-4 mx-auto" title="Minutos">
+            <p>
+              Ingrese los minutos totales que debe esperar el cliente para
+              recibir su pedido.
+            </p>
             <input
               type="number"
               className="form-control text-center"
               placeholder="Tiempo de entrega"
-              min="1"
-              max="60"
               name="timer"
               value={timer}
               onChange={(e) => setTimer(parseInt(e.target.value))}
             />
             <div className="input-group-append">
-              <button className="btn btn-info" onClick={startTimer}>
-                <i className="far fa-clock"></i>
+              <button
+                className="btn btn-warning text-white"
+                onClick={startTimer}
+              >
+                <i className="fas fa-sync"></i>
               </button>
             </div>
           </div>
         )}
 
         <div className="card-body text-center">
-          <h4>{formatNumber(request.total)}</h4>
+          <strong>Total: {formatNumber(request.total)}</strong>
         </div>
         {request.timer > 0 && (
-          <div className="card-footer text-center bg-info">
-            <h5 className="text-white">
-              <Countdown
-                date={Date.now() + timer * 60000}
-                renderer={showCounter}
-              />
-              <i className="far fa-clock ml-2"></i>
-            </h5>
-            <button className="btn btn-dark btn-block" onClick={finishOrder}>
+          <div className="card-footer text-center bg-app">
+            <Countdown
+              date={request.create + request.timer * 60000}
+              renderer={showCounter}
+            />
+            <button className="btn btn-block btn-light" onClick={finishOrder}>
               Marcar como terminado<i className="fas fa-bullhorn ml-2"></i>
             </button>
           </div>

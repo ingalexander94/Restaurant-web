@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { BrowserRouter as Router, Switch } from "react-router-dom";
 import FirebaseContext from "../../firebase/context";
+import { Loading } from "../ui/Loading";
 import { AuthRouter } from "./AuthRouter";
 import { DashboardRouter } from "./DashboardRouter";
 import PrivateRouter from "./PrivateRouter";
@@ -14,38 +15,41 @@ export default function AppRouter() {
   const isFirts = useRef(1);
 
   useEffect(() => {
-    let unsubscribe = firebase.auth.onAuthStateChanged((user) => {
-      if (user) {
-        setIsAuth(true);
-        if (isFirts.current <= 3) {
-          setChefAuth({
-            uid: user.uid,
-            name: user.displayName,
-            email: user.email,
-          });
-          isFirts.current = isFirts.current + 1;
+    async function subscribe() {
+      await firebase.auth.onAuthStateChanged(async (user) => {
+        if (user) {
+          setIsAuth(true);
+          if (isFirts.current <= 3) {
+            const userDB = await firebase.db.doc(`users/${user.uid}`).get();
+            setChefAuth({
+              uid: user.uid,
+              name: userDB.data().name,
+              email: user.email,
+              role: userDB.data().role,
+            });
+            isFirts.current = isFirts.current + 1;
+          }
+        } else {
+          setIsAuth(false);
+          setChefAuth(null);
+          isFirts.current = 1;
         }
-      } else {
-        setIsAuth(false);
-        setChefAuth(null);
-        isFirts.current = 1;
-      }
-      setCheking(false);
-    });
+        setTimeout(() => {
+          setCheking(false);
+        }, 1500);
+      });
+    }
+    subscribe();
+  }, [firebase.auth, firebase.db, isAuth, chefAuth]);
 
-    return () => {
-      unsubscribe();
-    };
-  }, [firebase.auth, isAuth, chefAuth]);
-
-  if (cheking) return <h1>Cargando...</h1>;
+  if (cheking) return <Loading />;
 
   return (
     <Router>
       <Switch>
         <PrivateRouter
           component={DashboardRouter}
-          path="/cocinero"
+          path="/usuario"
           isAuthenticated={isAuth}
           chefAuth={chefAuth}
         />

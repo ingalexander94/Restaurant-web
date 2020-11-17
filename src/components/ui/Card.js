@@ -2,7 +2,7 @@ import React, { useContext, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import queryString from "query-string";
 import FirebaseContext from "../../firebase/context";
-import { showToast } from "../../alerts";
+import { showAlertInput, showToast } from "../../alerts";
 import { formatNumber } from "../../helpers/pipes";
 
 const Card = ({ product }) => {
@@ -42,6 +42,24 @@ const Card = ({ product }) => {
     }
   };
 
+  const handleUpdatePrice = async () => {
+    try {
+      const { value } = await showAlertInput(
+        "Editar precio",
+        "Ingrese el nuevo precio del platillo"
+      );
+      if (value) {
+        const [price] = value;
+        price !== "" &&
+          (await firebase.db.doc(`products/${product.id}`).update({
+            price: +price,
+          }));
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleOnLoad = () => setImgLoad(true);
 
   return (
@@ -66,7 +84,7 @@ const Card = ({ product }) => {
         <div className="card-body">
           <h5 className="card-title">
             {product.name.toUpperCase()} -
-            <span className="ml-2 badge badge-info text-uppercase">
+            <span className="ml-2 badge badge-warning text-white text-uppercase">
               {product.category}
             </span>
           </h5>
@@ -95,8 +113,15 @@ const Card = ({ product }) => {
                 <cite title="Source Title">{formatNumber(product.price)}</cite>
               </small>
               <i
+                className="ml-2 fas fa-edit"
+                style={{ cursor: "pointer" }}
+                title="Cambiar precio"
+                onClick={handleUpdatePrice}
+              ></i>
+              <i
                 className="ml-2 text-danger far fa-trash-alt"
                 style={{ cursor: "pointer" }}
+                title="Eliminar platillo"
                 onClick={handleDeleteProduct}
               ></i>
             </footer>
