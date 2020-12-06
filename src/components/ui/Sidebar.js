@@ -58,7 +58,7 @@ export const Sidebar = () => {
               </li>
               {chefAuth !== null && chefAuth.role === "administrador" && (
                 <>
-                  <li className="nav-item">
+                  <li className="nav-item animate__animated animate__fadeIn">
                     <NavLink
                       className="nav-link"
                       exact
@@ -67,7 +67,7 @@ export const Sidebar = () => {
                       Crear platillo
                     </NavLink>
                   </li>
-                  <li className="nav-item">
+                  <li className="nav-item animate__animated animate__fadeIn">
                     <NavLink
                       className="nav-link"
                       exact

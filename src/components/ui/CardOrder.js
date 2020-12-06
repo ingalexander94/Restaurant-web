@@ -62,7 +62,7 @@ const CardOrder = ({ order: request }) => {
     <>
       <div className="card animate__animated animate__fadeIn text-dark">
         <div className="card-body">
-          <h5 className="card-title text-center">Alexander Peñaloza</h5>
+          <h5 className="card-title text-center">{request.nameClient}</h5>
         </div>
         <ul className="list-group list-group-flush text-center">
           {request.order.map((product) => (

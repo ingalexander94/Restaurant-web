@@ -61,7 +61,7 @@ export const AddChef = () => {
 
   return (
     <>
-      <div className="panel panel-default text-center">
+      <div className="panel panel-default text-center animate__animated animate__fadeIn">
         <div className="panel-heading">
           <div className="row title-auth">
             <h1 className="panel-title">
@@ -176,28 +176,30 @@ export const AddChef = () => {
                 </p>
               )}
             </div>
-            <div className="input-group mt-4 bg-input radius-input-left radius-input-right">
-              <div className="input-group-prepend">
-                <span
-                  className="input-group-text bg-input radius-input-left"
-                  id="basic-addon1"
+            <div>
+              <div className="input-group mt-4 bg-input radius-input-left radius-input-right">
+                <div className="input-group-prepend">
+                  <span
+                    className="input-group-text bg-input radius-input-left"
+                    id="basic-addon1"
+                  >
+                    <i className="fas fa-user-tag"></i>
+                  </span>
+                </div>
+                <select
+                  className="custom-select bg-input radius-none"
+                  id="role"
+                  value={formik.values.role}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                 >
-                  <i className="fas fa-user-tag"></i>
-                </span>
+                  <option value="">Seleccione...</option>
+                  <option value="cocinero">Cocinero</option>
+                  <option value="administrador">Administrador</option>
+                </select>
               </div>
-              <select
-                className="custom-select bg-input radius-none"
-                id="role"
-                value={formik.values.role}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              >
-                <option value="">Seleccione...</option>
-                <option value="cocinero">Cocinero</option>
-                <option value="administrador">Administrador</option>
-              </select>
               {formik.touched.role && formik.errors.role && (
-                <p className="text-error">
+                <p className="text-error text-left">
                   <strong>{formik.errors.role}</strong>
                 </p>
               )}

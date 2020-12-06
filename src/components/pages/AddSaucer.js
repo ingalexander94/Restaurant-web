@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useHistory } from "react-router-dom";
@@ -6,24 +6,43 @@ import FileUploader from "react-firebase-file-uploader";
 import AuthContext from "../auth/authContext";
 import FirebaseContext from "../../firebase/context";
 import { showToast } from "../../alerts";
+import { toCapitalize } from "../../helpers/pipes";
 
 export const AddSaucer = () => {
   // Hooks
   const history = useHistory();
   const ChefAuth = useContext(AuthContext);
-
-  useEffect(() => {
-    if (ChefAuth.role !== "administrador") {
-      history.push("/usuario/cocinero/ordenes");
-    }
-  }, [ChefAuth.role, history]);
-
   const { firebase } = useContext(FirebaseContext);
 
   const [progress, setProgress] = useState(1);
   const [upload, setUpload] = useState(false);
   const [urlImage, setUrlImage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
+
+  const loadCategories = useCallback(async () => {
+    const res = await firebase.db.collection("categories").get();
+    const categories = res.docs.map((doc) => {
+      return {
+        id: doc.id,
+        ...doc.data(),
+      };
+    });
+    setCategories(categories);
+  }, [firebase.db]);
+
+  useEffect(() => {
+    async function subscribe() {
+      await loadCategories();
+    }
+    subscribe();
+  }, [loadCategories]);
+
+  useEffect(() => {
+    if (ChefAuth.role !== "administrador") {
+      history.push("/usuario/cocinero/ordenes");
+    }
+  }, [ChefAuth.role, history]);
 
   // Validaciones del formulario
   const formik = useFormik({
@@ -91,9 +110,7 @@ export const AddSaucer = () => {
     setUpload(false);
   };
 
-  const handleProgress = (progress) => {
-    setProgress(progress);
-  };
+  const handleProgress = (progress) => setProgress(progress);
 
   return (
     <>
@@ -104,7 +121,7 @@ export const AddSaucer = () => {
         <div className="row g-0">
           <div className="col-md-6">
             <img
-              src="https://cdn.dribbble.com/users/1355613/screenshots/5972919/attachments/1284399/cook.jpg"
+              src={`${process.env.PUBLIC_URL}/assets/cook.jpg`}
               alt="Cargando..."
               className="img-fluid img-container animate__animated animate__fadeIn"
             />
@@ -163,13 +180,11 @@ export const AddSaucer = () => {
                   onBlur={formik.handleBlur}
                 >
                   <option value="">Seleccione...</option>
-                  <option value="almuerzos">Almuerzos</option>
-                  <option value="bebidas">Bebidas</option>
-                  <option value="cena">Cena</option>
-                  <option value="cervezas">Cervezas</option>
-                  <option value="comida rapida">Comida rápida</option>
-                  <option value="cócteles">Cócteles</option>
-                  <option value="desayuno">Desayuno</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={`${category.name}`}>
+                      {toCapitalize(category.name)}
+                    </option>
+                  ))}
                 </select>
                 {formik.touched.category && formik.errors.category && (
                   <p className="text-error">

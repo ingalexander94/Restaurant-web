@@ -1,3 +1,7 @@
+input {
+    caret-color: #FDD24B;
+}
+
 .title-auth {
     display: flex;
     align-items: center;

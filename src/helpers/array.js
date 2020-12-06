@@ -33,6 +33,11 @@ const getFilterOrdersByDate = (orders = [], since, until) =>
     return dayjs(dateFormat).isBetween(since, until, null, "[]");
   });
 
+const getFilterOrdersByNameClient = (nameClient = "", orders = []) =>
+  orders.filter(
+    (order) => order.nameClient.toLowerCase() === nameClient.toLowerCase()
+  );
+
 const calculateTotal = (orders = []) =>
   orders.reduce((acc, cur) => (cur.complete ? acc + cur.total : acc + 0), 0);
 
@@ -57,6 +62,25 @@ const calculateTotalToday = (orders = []) => {
   return total;
 };
 
+const calculateBestSeller = (sales = []) => {
+  const joinSales = sales.reduce((acc, cur) => [...acc, cur.order], []);
+  const flatten = joinSales.reduce((acc, cur) => acc.concat(cur), []);
+  const aux = {};
+  flatten.map((sale) => {
+    if (aux.hasOwnProperty(sale.name)) {
+      return (aux[sale.name] += sale.quantity);
+    } else {
+      return (aux[sale.name] = sale.quantity);
+    }
+  });
+  const bestSeller = Object.keys(aux).sort((a, b) => aux[b] - aux[a])[0];
+  return {
+    sumary: aux,
+    bestSeller: bestSeller,
+    quantity: aux[bestSeller],
+  };
+};
+
 export {
   showProducts,
   countOrders,
@@ -65,4 +89,6 @@ export {
   calculateSubtotal,
   calculateTotalToday,
   getFilterOrdersByDate,
+  getFilterOrdersByNameClient,
+  calculateBestSeller,
 };

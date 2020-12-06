@@ -1,6 +1,14 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { showAlertInput, showToast } from "../../alerts";
 import FirebaseContext from "../../firebase/context";
 import { showProducts } from "../../helpers/array";
+import { toCapitalize } from "../../helpers/pipes";
 import Card from "../ui/Card";
 
 export const Menu = () => {
@@ -9,6 +17,25 @@ export const Menu = () => {
   const ref = useRef([]);
   const [products, setProducts] = useState([]);
   const [filter, setFilter] = useState("");
+  const [categories, setCategories] = useState([]);
+
+  const loadCategories = useCallback(async () => {
+    const res = await firebase.db.collection("categories").get();
+    const categories = res.docs.map((doc) => {
+      return {
+        id: doc.id,
+        ...doc.data(),
+      };
+    });
+    setCategories(categories);
+  }, [firebase.db]);
+
+  useEffect(() => {
+    async function subscribe() {
+      await loadCategories();
+    }
+    subscribe();
+  }, [loadCategories]);
 
   useEffect(() => {
     let unsubscribe = () => {};
@@ -44,6 +71,29 @@ export const Menu = () => {
     }
   };
 
+  const handleCreateCategory = async () => {
+    try {
+      const { value } = await showAlertInput(
+        "Nueva categoría",
+        "Ingrese el nombre de la categoría",
+        "text"
+      );
+      if (value) {
+        const [newCategory] = value;
+        const save = await firebase.db
+          .collection("categories")
+          .add({ name: newCategory.toLowerCase() });
+        setCategories([
+          { id: save.id, name: newCategory.toLowerCase() },
+          ...categories,
+        ]);
+        showToast("success", `Se creo la categoría ${newCategory}`);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const filterByCategory = (categoria = "todos") => {
     if (categoria !== "todos") {
       const data = showProducts(ref.current, categoria);
@@ -70,47 +120,22 @@ export const Menu = () => {
             </button>
             <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
               <div
-                className="dropdown-item c-pointer"
-                onClick={() => filterByCategory("Almuerzos")}
+                className="dropdown-item c-pointer active"
+                onClick={handleCreateCategory}
               >
-                Almuerzos
+                <span className="text-white">
+                  Crear nueva <i className="fas fa-tag ml-2"></i>
+                </span>
               </div>
-              <div
-                className="dropdown-item c-pointer"
-                onClick={() => filterByCategory("Bebidas")}
-              >
-                Bebidas
-              </div>
-              <div
-                className="dropdown-item c-pointer"
-                onClick={() => filterByCategory("Cena")}
-              >
-                Cena
-              </div>
-              <div
-                className="dropdown-item c-pointer"
-                onClick={() => filterByCategory("Cervezas")}
-              >
-                Cervezas
-              </div>
-              <div
-                className="dropdown-item c-pointer"
-                onClick={() => filterByCategory("Comida")}
-              >
-                Comida rápida
-              </div>
-              <div
-                className="dropdown-item c-pointer"
-                onClick={() => filterByCategory("Cócteles")}
-              >
-                Cócteles
-              </div>
-              <div
-                className="dropdown-item c-pointer"
-                onClick={() => filterByCategory("Desayuno")}
-              >
-                Desayuno
-              </div>
+              {categories.map((category) => (
+                <div
+                  key={category.id}
+                  className="dropdown-item c-pointer"
+                  onClick={() => filterByCategory(`${category.name}`)}
+                >
+                  {toCapitalize(category.name)}
+                </div>
+              ))}
               <div
                 className="dropdown-item c-pointer"
                 onClick={() => filterByCategory("todos")}

@@ -13,4 +13,6 @@ const formatDate = (timeStamp) =>
 
 const formatCurrentDate = () => dayjs(Date.now()).format("YYYY-MM-DD");
 
-export { formatNumber, formatDate, formatCurrentDate };
+const toCapitalize = (text) => `${text[0].toUpperCase()}${text.slice(1)}`;
+
+export { formatNumber, formatDate, formatCurrentDate, toCapitalize };

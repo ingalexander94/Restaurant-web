@@ -30,11 +30,14 @@ const showQuestion = (title, text, icon, confirmButtonText) => {
   });
 };
 
-const showAlertInput = (title, text) => {
+const showAlertInput = (title, text, input = "number") => {
   return Swal.mixin({
-    input: "number",
+    input,
     confirmButtonText: "Aceptar",
     progressSteps: ["1"],
+    inputAttributes: {
+      required: true,
+    },
   }).queue([
     {
       title,
